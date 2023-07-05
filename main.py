@@ -40,10 +40,15 @@ class Record:
 
     def days_to_birthday(self):
         if self.birthday:
-            birthday = datetime(self.birthday.year, self.birthday.mont, self.birthday.day)
             current_day = datetime.now()
-            time_delta = current_day - birthday
-            return time_delta.days
+            birthday = datetime(current_day.year, self.birthday.month, self.birthday.day)
+            if birthday > current_day:
+                time_delta = birthday - current_day
+                return time_delta.days
+            else:
+                birthday = datetime(current_day.year + 1, self.birthday.month, self.birthday.day)
+                time_delta = birthday - current_day
+                return time_delta.days
         else:
             print('Add birthday to contact')
 
@@ -87,10 +92,43 @@ class Phone(Field):
 
 
 class Birthday(Field):
-    def __init__(self, year: int, month: int, day: int):
-        self.year = year
-        self.month = month
-        self.day = day
+    def __init__(self):
+        self.__year = None
+        self.__month = None
+        self.__day = None
+
+    @property
+    def year(self):
+        return self.__year
+
+    @year.setter
+    def year(self, year: str):
+        if year.isdigit():
+            self.__year = int(year)
+        else:
+            print('Year must be number')
+
+    @property
+    def month(self):
+        return self.__month
+
+    @month.setter
+    def month(self, month: str):
+        if month.isdigit():
+            self.__month = int(month)
+        else:
+            print('Month must must be number from 1 to 12')
+
+    @property
+    def day(self):
+        return self.__day
+
+    @day.setter
+    def day(self, day: str):
+        if day.isdigit():
+            self.__day = int(day)
+        else:
+            print('Day must be number')
 
 
 def input_error(func):
@@ -106,6 +144,8 @@ def input_error(func):
                 print('Enter Username and telephone number')
             elif len(args) <= 3 and args[0] in ['change']:
                 print('Enter 2nd telephone number')
+            elif len(args) >= 3 and len(args) < 6 and args[0] in ['add']:
+                print('Enter year month day of birthday through a space')
             else:
                 return func(*args)
         except KeyError:
@@ -138,7 +178,14 @@ def add_contact(*args):
     name = Name(args[1].title())
     phone = Phone()
     phone.phone = args[2]
-    record = Record(name, phone)
+    if len(args) > 3:
+        birthday = Birthday()
+        birthday.year = args[3]
+        birthday.month = args[4]
+        birthday.day = args[5]
+        record = Record(name, phone, birthday)
+    else:
+        record = Record(name, phone)
     if phone.phone:
         PHONEBOOK.add_record(record)
         print(f'Contact {args[1].title()} {args[2]} has been added to PHONEBOOK')
@@ -200,12 +247,18 @@ def show_phone(*args):
 
 
 def show_all_contacts(*args):
-    num, name, tel = '№', 'Name', 'Phones'
-    print(f'|{num:^5}|{name:^10}|{tel:^15}|')
+    num, name, tel, bday = '№', 'Name', 'Phones', 'Birthday'
+    print(f'|{num:^5}|{name:^10}|{tel:^15}|{bday:^15}|')
     for k, v in enumerate(PHONEBOOK):
         phones_list = ', '.join(i.phone for i in PHONEBOOK[v].phones)
         len_num = len(phones_list) if len(phones_list) > 15 else 15
-        print(f'|{k:^5}|{v:^10}|{phones_list:^{len_num}}|')
+        if PHONEBOOK[v].birthday:
+            birthday_all = f'{PHONEBOOK[v].birthday.day}-{PHONEBOOK[v].birthday.month}-{PHONEBOOK[v].birthday.year}'
+            days_to_bday = PHONEBOOK[v].days_to_birthday()
+            print(f'|{k:^5}|{v:^10}|{phones_list:^{len_num}}|{days_to_bday:^15}|')
+        else:
+            text = 'not indicated'
+            print(f'|{k:^5}|{v:^10}|{phones_list:^{len_num}}|{text:^15}|')
     return ''
 
 
