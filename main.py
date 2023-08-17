@@ -18,12 +18,20 @@ class AddressBook(UserDict):
     def __next__(self):
         if self.counter_index < len(self.data):
             dct_keys = {key: value for key, value in enumerate(self.data.keys())}
-            dct_values = {key: value for key, value in enumerate(self.data.values())}
             gen_value = self.data[dct_keys[self.counter_index]]
             gen_key = list(self.data.keys())[self.counter_index]
             self.counter_index += 1
-            return gen_key, gen_value
+            return gen_value
         raise StopIteration
+
+    def iterator(self, num=None):
+        count = 0
+        if num is None or num == 0:
+            return self.data
+        else:
+            while count < num:
+                yield self.__next__()
+                count += 1
 
 
 class AddressBookGenerator:
@@ -289,23 +297,37 @@ def show_phone(*args):
 
 
 def show_all_contacts(*args):
-    num, name, tel, bday = '№', 'Name', 'Phones', 'Birthday'
-    print(f'|{num:^5}|{name:^10}|{tel:^15}|{bday:^15}|')
-    for k, v in enumerate(PHONEBOOK):
-        phones_list = ', '.join(i.phone for i in PHONEBOOK[v].phones)
-        len_num = len(phones_list) if len(phones_list) > 15 else 15
-        if PHONEBOOK[v].birthday:
-            days_to_bday = PHONEBOOK[v].days_to_birthday()
-            print(f'|{k:^5}|{v:^10}|{phones_list:^{len_num}}|{days_to_bday:^15}|')
+    try:
+        num, name, tel, bday = '№', 'Name', 'Phones', 'Birthday'
+        if args[0] != 0:
+            print(f'|{num:^5}|{name:^10}|{tel:^15}|{bday:^15}|')
+            for k, v in enumerate(PHONEBOOK.iterator(int(args[0]))):
+                phones_list = ', '.join(i.phone for i in v.phones)
+                len_num = len(phones_list) if len(phones_list) > 15 else 15
+                if v.birthday:
+                    days_to_bday = v.days_to_birthday()
+                    print(f'|{k:^5}|{v.name:^10}|{phones_list:^{len_num}}|{days_to_bday:^15}|')
+                else:
+                    text = 'not indicated'
+                    print(f'|{k:^5}|{v.name.value:^10}|{phones_list:^{len_num}}|{text:^15}|')
         else:
-            text = 'not indicated'
-            print(f'|{k:^5}|{v:^10}|{phones_list:^{len_num}}|{text:^15}|')
+            print(f'|{num:^5}|{name:^10}|{tel:^15}|{bday:^15}|')
+            for k, v in enumerate(PHONEBOOK):
+                phones_list = ', '.join(i.phone for i in PHONEBOOK[v].phones)
+                len_num = len(phones_list) if len(phones_list) > 15 else 15
+                if PHONEBOOK[v].birthday:
+                    days_to_bday = v.days_to_birthday()
+                    print(f'|{k:^5}|{v:^10}|{phones_list:^{len_num}}|{days_to_bday:^15}|')
+                else:
+                    text = 'not indicated'
+                    print(f'|{k:^5}|{v:^10}|{phones_list:^{len_num}}|{text:^15}|')
+    except RuntimeError:
+        print('Phone book is finished')
     return ''
 
 
 def show_part(number):
-    for i in range(number):
-        print(next(PHONEBOOK))
+    pass
 
 
 OPERATIONS = {
@@ -337,7 +359,11 @@ def main():
             if request_list[0] in list(OPERATIONS):
                 get_hendler(*request.split())(*request.split())
             elif ' '.join(request_list[0:2]) == 'show all':
-                show_all_contacts()
+                if len(request_list) >= 3:
+                    show_all_contacts(request_list[2])
+                else:
+                    request_list.append(0)
+                    show_all_contacts(request_list[2])
             elif request in ['exit', 'close', 'good bye']:
                 flag = False
             else:
@@ -353,20 +379,31 @@ if __name__ == '__main__':
     #
     # name1 = Name('Name1')
     # name2 = Name('Name2')
+    # name3 = Name('Name3')
+    # name4 = Name('Name4')
     #
     # phone1 = Phone()
     # phone1.phone = '+380961234567'
     # phone2 = Phone()
     # phone2.phone = '+380961234568'
+    # phone3 = Phone()
+    # phone3.phone = '+380961122333'
+    # phone4 = Phone()
+    # phone4.phone = '+380961122333'
     #
     # record1 = Record(name1, phone1)
     # record2 = Record(name2, phone2)
+    # record3 = Record(name3, phone3)
+    # record4 = Record(name4, phone4)
     #
     # PHONEBOOK.add_record(record1)
     # PHONEBOOK.add_record(record2)
+    # PHONEBOOK.add_record(record3)
+    # PHONEBOOK.add_record(record4)
     #
-    # # for i in PHONEBOOK.items():
-    # #     print(i)
-    #
-    # print(next(PHONEBOOK))
-    # print(next(PHONEBOOK))
+    # a = PHONEBOOK.iterator(2)
+    # for i in a:
+    #     print(i)
+    # b = PHONEBOOK.iterator(2)
+    # for i in b:
+    #     print(i)
