@@ -4,8 +4,35 @@ import re
 
 
 class AddressBook(UserDict):
+
+    def __init__(self, counter_index=0, *args, **kwargs):
+        self.counter_index = counter_index
+        super().__init__(*args, **kwargs)
+
     def add_record(self, record):
         self.data[record.name.value] = record
+
+    # def __iter__(self):
+    #     return self
+
+    def __next__(self):
+        if self.counter_index < len(self.data):
+            dct_keys = {key: value for key, value in enumerate(self.data.keys())}
+            dct_values = {key: value for key, value in enumerate(self.data.values())}
+            gen_value = self.data[dct_keys[self.counter_index]]
+            gen_key = list(self.data.keys())[self.counter_index]
+            self.counter_index += 1
+            return gen_key, gen_value
+        raise StopIteration
+
+
+class AddressBookGenerator:
+
+    def __init__(self, generator):
+        self.__generator = generator
+
+    def __iter__(self):
+        return self.__generator
 
 
 class Record:
@@ -18,8 +45,8 @@ class Record:
         self.birthday = bday
 
     def add_phone(self, phone):
-        phones_dict = {phone.phone: index for index, phone in enumerate(self.phones)}
-        if phone.phone not in phones_dict.keys() and phone.phone != None:
+        phones_list = [phone.phone for phone in self.phones]
+        if phone.phone not in phones_list and phone.phone != None:
             self.phones.append(phone)
         else:
             print(f'{phone.phone} already exist!')
@@ -44,13 +71,19 @@ class Record:
             birthday = datetime(current_day.year, self.birthday.month, self.birthday.day)
             if birthday > current_day:
                 time_delta = birthday - current_day
-                return time_delta.days
+                return time_delta.days if time_delta.days != 365 else 0
             else:
                 birthday = datetime(current_day.year + 1, self.birthday.month, self.birthday.day)
                 time_delta = birthday - current_day
-                return time_delta.days
+                return time_delta.days if time_delta.days != 365 else 0
         else:
             print('Add birthday to contact')
+
+    def __str__(self):
+        return f'{self.name} {self.phones} {self.birthday}'
+
+    def __repr__(self):
+        return f'{self.name} {self.phones} {self.birthday}'
 
 
 class Field:
@@ -68,6 +101,9 @@ class Name(Field):
     @value.setter
     def value(self, name):
         self.__value = name
+
+    def __str__(self):
+        return self.__value
 
 
 class Phone(Field):
@@ -89,6 +125,12 @@ class Phone(Field):
 
         except AttributeError:
             print('Write correct number')
+
+    def __str__(self):
+        return self.__phone
+
+    def __repr__(self):
+        return self.__phone
 
 
 class Birthday(Field):
@@ -144,7 +186,7 @@ def input_error(func):
                 print('Enter Username and telephone number')
             elif len(args) <= 3 and args[0] in ['change']:
                 print('Enter 2nd telephone number')
-            elif len(args) >= 3 and len(args) < 6 and args[0] in ['add']:
+            elif len(args) > 3 and len(args) < 6 and args[0] in ['new']:
                 print('Enter year month day of birthday through a space')
             else:
                 return func(*args)
@@ -253,13 +295,17 @@ def show_all_contacts(*args):
         phones_list = ', '.join(i.phone for i in PHONEBOOK[v].phones)
         len_num = len(phones_list) if len(phones_list) > 15 else 15
         if PHONEBOOK[v].birthday:
-            birthday_all = f'{PHONEBOOK[v].birthday.day}-{PHONEBOOK[v].birthday.month}-{PHONEBOOK[v].birthday.year}'
             days_to_bday = PHONEBOOK[v].days_to_birthday()
             print(f'|{k:^5}|{v:^10}|{phones_list:^{len_num}}|{days_to_bday:^15}|')
         else:
             text = 'not indicated'
             print(f'|{k:^5}|{v:^10}|{phones_list:^{len_num}}|{text:^15}|')
     return ''
+
+
+def show_part(number):
+    for i in range(number):
+        print(next(PHONEBOOK))
 
 
 OPERATIONS = {
@@ -271,6 +317,7 @@ OPERATIONS = {
     'change': change_contact,
     'phone': show_phone,
     'show all': show_all_contacts,
+    'part': show_part,
     'help': helper
 }
 
@@ -301,3 +348,25 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+    # PHONEBOOK_GEN = AddressBookGenerator(PHONEBOOK)
+    #
+    # name1 = Name('Name1')
+    # name2 = Name('Name2')
+    #
+    # phone1 = Phone()
+    # phone1.phone = '+380961234567'
+    # phone2 = Phone()
+    # phone2.phone = '+380961234568'
+    #
+    # record1 = Record(name1, phone1)
+    # record2 = Record(name2, phone2)
+    #
+    # PHONEBOOK.add_record(record1)
+    # PHONEBOOK.add_record(record2)
+    #
+    # # for i in PHONEBOOK.items():
+    # #     print(i)
+    #
+    # print(next(PHONEBOOK))
+    # print(next(PHONEBOOK))
