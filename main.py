@@ -375,35 +375,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-    # PHONEBOOK_GEN = AddressBookGenerator(PHONEBOOK)
-    #
-    # name1 = Name('Name1')
-    # name2 = Name('Name2')
-    # name3 = Name('Name3')
-    # name4 = Name('Name4')
-    #
-    # phone1 = Phone()
-    # phone1.phone = '+380961234567'
-    # phone2 = Phone()
-    # phone2.phone = '+380961234568'
-    # phone3 = Phone()
-    # phone3.phone = '+380961122333'
-    # phone4 = Phone()
-    # phone4.phone = '+380961122333'
-    #
-    # record1 = Record(name1, phone1)
-    # record2 = Record(name2, phone2)
-    # record3 = Record(name3, phone3)
-    # record4 = Record(name4, phone4)
-    #
-    # PHONEBOOK.add_record(record1)
-    # PHONEBOOK.add_record(record2)
-    # PHONEBOOK.add_record(record3)
-    # PHONEBOOK.add_record(record4)
-    #
-    # a = PHONEBOOK.iterator(2)
-    # for i in a:
-    #     print(i)
-    # b = PHONEBOOK.iterator(2)
-    # for i in b:
-    #     print(i)
